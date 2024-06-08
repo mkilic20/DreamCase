@@ -17,10 +17,10 @@ services:
     container_name: case-mysqldb
     restart: always
     environment:
-      MYSQL_DATABASE: 'mysql-db'
-      MYSQL_USER: 'user'
-      MYSQL_PASSWORD: 'password'
-      MYSQL_ROOT_PASSWORD: 'password'
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     networks:
       - 'local-network'
     ports:
@@ -31,6 +31,7 @@ services:
 
 volumes:
   case-mysql-data:
+
 
 networks:
   local-network:
