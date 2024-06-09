@@ -1,6 +1,28 @@
 version: '3.9'
 
 services:
+  mysqldb:
+    image: mysql:8.0.28-oracle
+    container_name: case-mysqldb
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'mysql-db'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'password'
+    networks:
+      - 'local-network'
+    ports:
+      - '3306:3306'
+    volumes:
+      - case-mysql-data:/var/lib/mysql
+      - ./mysql-db-dump.sql:/docker-entrypoint-initdb.d/mysql-db-dump.sql:ro
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
   app:
     image: backend-engineering-case-study:1.0
     container_name: backend-engineering-case-study
@@ -8,33 +30,14 @@ services:
       context: .
       dockerfile: Dockerfile
     depends_on:
-      - mysqldb
+      mysqldb:
+        condition: service_healthy
     ports:
       - '8080:8080'
     environment:
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      - spring.datasource.url=jdbc:mysql://mysqldb:3306/mysql-db?allowPublicKeyRetrieval=true
     networks:
       - 'local-network'
-
-  mysqldb:
-    image: mysql:8.0.28-oracle
-    container_name: case-mysqldb
-    restart: always
-    environment:
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-    networks:
-      - 'local-network'
-    ports:
-      - '3306:3306'
-    volumes:
-      - case-mysql-data:/var/lib/case-mysqldb
-      - ./mysql-db-dump.sql:/docker-entrypoint-initdb.d/mysql-db-dump.sql:ro
 
 volumes:
   case-mysql-data:

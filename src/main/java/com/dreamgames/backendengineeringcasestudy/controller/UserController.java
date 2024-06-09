@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 @RestController
@@ -17,9 +16,8 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/create")
-    public User createUser(@RequestBody Map<String, String> request) {
+    public User createUser() {
         User newUser = new User();
-        newUser.setUsername(request.get("username"));
         newUser.setLevel(1); // Starting level
         newUser.setCoins(5000); // Starting coins
 
@@ -27,19 +25,18 @@ public class UserController {
         User.Country[] countries = User.Country.values();
         newUser.setCountry(countries[new Random().nextInt(countries.length)]);
 
-        userService.saveUser(newUser);
-        return newUser;
+        return userService.saveUser(newUser);
     }
 
     @PutMapping("/updateLevel/{id}")
-    public User updateLevel(@PathVariable long id) {
+    public User updateLevel(@PathVariable Long id) {
         User user = userService.getUserById(id);
         if (user != null) {
             user.setLevel(user.getLevel() + 1);
             user.setCoins(user.getCoins() + 25);
-            userService.updateUser(user);
+            return userService.updateUser(user);
         }
-        return user;
+        return null;
     }
 
     @GetMapping
@@ -48,12 +45,12 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable long id) {
+    public User getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
     }
 
     @DeleteMapping("/{id}")
-    public int deleteUser(@PathVariable long id) {
-        return userService.deleteUser(id);
+    public void deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
     }
 }

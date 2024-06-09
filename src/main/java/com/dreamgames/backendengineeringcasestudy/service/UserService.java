@@ -1,7 +1,7 @@
 package com.dreamgames.backendengineeringcasestudy.service;
 
-import com.dreamgames.backendengineeringcasestudy.dao.UserDao;
 import com.dreamgames.backendengineeringcasestudy.model.User;
+import com.dreamgames.backendengineeringcasestudy.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,25 +11,25 @@ import java.util.List;
 public class UserService {
 
     @Autowired
-    private UserDao userDao;
+    private UserRepository userRepository;
 
-    public int saveUser(User user) {
-        return userDao.save(user);
+    public User saveUser(User user) {
+        return userRepository.save(user);
     }
 
     public List<User> getAllUsers() {
-        return userDao.findAll();
+        return userRepository.findAll();
     }
 
-    public User getUserById(long id) {
-        return userDao.findById(id);
+    public User getUserById(Long id) {
+        return userRepository.findById(id).orElse(null);
     }
 
-    public int updateUser(User user) {
-        return userDao.update(user);
+    public User updateUser(User user) {
+        return userRepository.save(user);
     }
 
-    public int deleteUser(long id) {
-        return userDao.delete(id);
+    public void deleteUser(Long id) {
+        userRepository.deleteById(id);
     }
 }

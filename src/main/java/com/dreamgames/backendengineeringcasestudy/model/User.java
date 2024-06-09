@@ -1,11 +1,23 @@
 package com.dreamgames.backendengineeringcasestudy.model;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "users")
 public class User {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String username;
+
+    @Column(nullable = false)
     private int level;
+
+    @Column(nullable = false)
     private int coins;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Country country;
 
     public enum Country {
@@ -19,14 +31,6 @@ public class User {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public int getLevel() {
