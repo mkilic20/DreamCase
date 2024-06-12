@@ -74,15 +74,32 @@ public class TournamentService {
                         .collect(Collectors.toList());
 
                 if (!participants.isEmpty()) {
-                    participants.get(0).setReward(10000); // First place
-                    participants.get(0).setRewardClaimed(false);
-                    if (participants.size() > 1) {
-                        participants.get(1).setReward(5000); // Second place
-                        participants.get(1).setRewardClaimed(false);
+                    int currentRank = 1;
+                    int rewardForRank = 10000;
+                    for (int i = 0; i < participants.size(); i++) {
+                        TournamentUser participant = participants.get(i);
+
+                        // Determine the appropriate reward based on the current rank
+                        if (currentRank == 1) {
+                            rewardForRank = 10000;
+                        } else if (currentRank == 2) {
+                            rewardForRank = 5000;
+                        } else {
+                            break; // Only top 2 ranks get rewards
+                        }
+
+                        participant.setReward(rewardForRank);
+                        participant.setRewardClaimed(false);
+
+                        if (i < participants.size() - 1) {
+                            if (participants.get(i).getScore() != participants.get(i + 1).getScore()) {
+                                currentRank++;
+                            }
+                        }
+
+                        tournamentUserRepository.save(participant);
                     }
                 }
-
-                tournamentUserRepository.saveAll(participants);
             }
         }
     }
@@ -181,9 +198,15 @@ public class TournamentService {
                 ))
                 .collect(Collectors.toList());
 
-        // Set ranks
+        // Set ranks and handle draws
+        int rank = 1;
         for (int i = 0; i < leaderboard.size(); i++) {
-            leaderboard.get(i).setRank(i + 1);
+            if (i > 0 && leaderboard.get(i).getScore() == leaderboard.get(i - 1).getScore()) {
+                leaderboard.get(i).setRank(leaderboard.get(i - 1).getRank());
+            } else {
+                leaderboard.get(i).setRank(rank);
+            }
+            rank++;
         }
 
         return leaderboard;
@@ -302,18 +325,13 @@ public class TournamentService {
 
         List<GroupLeaderboardEntry> leaderboard = getLeaderboard(group);
 
-        int rank = leaderboard.stream()
-                .map(GroupLeaderboardEntry::getUserId)
-                .collect(Collectors.toList())
-                .indexOf(userId) + 1;
-
         GroupLeaderboardEntry userEntry = leaderboard.stream()
                 .filter(entry -> entry.getUserId().equals(userId))
                 .findFirst()
                 .orElse(null);
 
-        if (userEntry != null) {
-            userEntry.setRank(rank);
+        if (userEntry == null) {
+            throw new IllegalArgumentException("User is not found in the tournament group leaderboard");
         }
 
         return userEntry;
