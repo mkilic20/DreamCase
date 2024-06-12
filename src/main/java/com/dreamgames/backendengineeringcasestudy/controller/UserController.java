@@ -3,54 +3,87 @@ package com.dreamgames.backendengineeringcasestudy.controller;
 import com.dreamgames.backendengineeringcasestudy.model.User;
 import com.dreamgames.backendengineeringcasestudy.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Random;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+
     @Autowired
     private UserService userService;
 
     @PostMapping("/create")
-    public User createUser() {
-        User newUser = new User();
-        newUser.setLevel(1); // Starting level
-        newUser.setCoins(5000); // Starting coins
-
-        // Randomly assign a country
-        User.Country[] countries = User.Country.values();
-        newUser.setCountry(countries[new Random().nextInt(countries.length)]);
-
-        return userService.saveUser(newUser);
+    public ResponseEntity<?> createUser(@RequestParam(required = false) String username) {
+        try {
+            User savedUser = userService.createUser(username);
+            return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
+        } catch (Exception e) {
+            logger.error("An unexpected error occurred while creating user", e);
+            return new ResponseEntity<>("An unexpected error occurred: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PutMapping("/updateLevel/{id}")
-    public User updateLevel(@PathVariable Long id) {
-        User user = userService.getUserById(id);
-        if (user != null) {
-            user.setLevel(user.getLevel() + 1);
-            user.setCoins(user.getCoins() + 25);
-            return userService.updateUser(user);
+    public ResponseEntity<?> updateLevel(@PathVariable Long id) {
+        try {
+            User user = userService.updateUserLevel(id);
+            if (user != null) {
+                return new ResponseEntity<>(user, HttpStatus.OK);
+            }
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            logger.error("An unexpected error occurred while updating user level", e);
+            return new ResponseEntity<>("An unexpected error occurred: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return null;
     }
 
     @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    public ResponseEntity<?> getAllUsers() {
+        try {
+            List<User> users = userService.getAllUsers();
+            return new ResponseEntity<>(users, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error("An unexpected error occurred while retrieving all users", e);
+            return new ResponseEntity<>("An unexpected error occurred: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable Long id) {
-        return userService.getUserById(id);
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+        try {
+            User user = userService.getUserById(id);
+            if (user != null) {
+                return new ResponseEntity<>(user, HttpStatus.OK);
+            }
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            logger.error("An unexpected error occurred while retrieving user by id", e);
+            return new ResponseEntity<>("An unexpected error occurred: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        try {
+            userService.deleteUser(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            logger.error("An unexpected error occurred while deleting user", e);
+            return new ResponseEntity<>("An unexpected error occurred: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
