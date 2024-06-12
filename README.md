@@ -1,5 +1,5 @@
 # Dream Games Backend Engineering Case Study
-
+### Mehmet Eren Kılıç
 ## Project Overview
 This project is a backend system for a mobile game. The backend is built using Spring Boot with Java, and it provides a REST API to maintain the users' progress and manage a daily World Cup tournament. The system is designed to be fast and secure, enhancing the user experience.
 
