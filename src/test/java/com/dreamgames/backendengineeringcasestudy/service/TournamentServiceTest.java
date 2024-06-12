@@ -237,12 +237,12 @@ public class TournamentServiceTest {
 
         TournamentUser user1 = new TournamentUser();
         user1.setUser(new User());
-        user1.getUser().setCountry(User.Country.TURKEY);
+        user1.getUser().setCountry(Country.TURKEY);
         user1.setScore(10);
 
         TournamentUser user2 = new TournamentUser();
         user2.setUser(new User());
-        user2.getUser().setCountry(User.Country.UNITED_STATES);
+        user2.getUser().setCountry(Country.UNITED_STATES);
         user2.setScore(8);
 
         group.setParticipants(Arrays.asList(user1, user2));

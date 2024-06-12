@@ -15,6 +15,9 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Service class for managing tournaments.
+ */
 @Service
 public class TournamentService {
 
@@ -32,6 +35,12 @@ public class TournamentService {
     @Autowired
     private TournamentUserRepository tournamentUserRepository;
 
+    /**
+     * Creates a new tournament with the current start time and a fixed end time
+     * (20:00 UTC).
+     * 
+     * @return the newly created tournament
+     */
     public Tournament createTournament() {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         LocalDateTime endTime = now.withHour(20).withMinute(0).withSecond(0);
@@ -44,18 +53,38 @@ public class TournamentService {
         return tournamentRepository.save(tournament);
     }
 
+    /**
+     * Retrieves all tournaments.
+     * 
+     * @return a list of all tournaments
+     */
     public List<Tournament> getAllTournaments() {
         return tournamentRepository.findAll();
     }
 
+    /**
+     * Retrieves a tournament by its ID.
+     * 
+     * @param id the ID of the tournament
+     * @return the tournament entity if found, null otherwise
+     */
     public Tournament getTournamentById(Long id) {
         return tournamentRepository.findById(id).orElse(null);
     }
 
+    /**
+     * Updates the given tournament entity.
+     * 
+     * @param tournament the tournament entity to update
+     * @return the updated tournament entity
+     */
     public Tournament updateTournament(Tournament tournament) {
         return tournamentRepository.save(tournament);
     }
 
+    /**
+     * Ends all active tournaments and distributes rewards to the participants.
+     */
     public void endTournaments() {
         List<Tournament> activeTournaments = tournamentRepository.findByIsActiveTrue();
         for (Tournament tournament : activeTournaments) {
@@ -65,10 +94,15 @@ public class TournamentService {
         }
     }
 
+    /**
+     * Distributes rewards to the participants of the given tournament.
+     * 
+     * @param tournament the tournament entity
+     */
     protected void distributeRewards(Tournament tournament) {
         List<TournamentGroup> groups = tournamentGroupRepository.findByTournament(tournament);
         for (TournamentGroup group : groups) {
-            if (group.getCompetitionStarted()) {
+            if (group.getCompetitionStarted()) { // Only distribute rewards if the competition has started
                 List<TournamentUser> participants = group.getParticipants().stream()
                         .sorted(Comparator.comparingInt(TournamentUser::getScore).reversed())
                         .collect(Collectors.toList());
@@ -104,6 +138,13 @@ public class TournamentService {
         }
     }
 
+    /**
+     * Allows a user to enter the current active tournament.
+     * 
+     * @param userId the ID of the user
+     * @return the leaderboard of the user's tournament group
+     * @throws IllegalArgumentException if the user does not meet the requirements
+     */
     public List<GroupLeaderboardEntry> enterTournament(Long userId) {
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
@@ -126,7 +167,7 @@ public class TournamentService {
             throw new IllegalArgumentException("User already entered the current tournament");
         }
 
-        user.setCoins(user.getCoins() - 1000);
+        user.setCoins(user.getCoins() - 1000); // Deduct 1000 coins
         userRepository.save(user);
 
         TournamentGroup tournamentGroup = findOrCreateTournamentGroup(currentTournament, user);
@@ -137,6 +178,13 @@ public class TournamentService {
         return getLeaderboard(tournamentGroup);
     }
 
+    /**
+     * Finds or creates a tournament group for the user.
+     * 
+     * @param tournament the tournament entity
+     * @param user       the user entity
+     * @return the tournament group entity
+     */
     private TournamentGroup findOrCreateTournamentGroup(Tournament tournament, User user) {
         List<TournamentGroup> groups = tournamentGroupRepository.findByTournament(tournament)
                 .stream()
@@ -148,12 +196,12 @@ public class TournamentService {
             boolean hasSameCountry = tournamentUserRepository.existsByTournamentGroupAndUser_Country(group,
                     user.getCountry());
 
-            if (!hasSameCountry && participantCount < 5) {
+            if (!hasSameCountry && participantCount < 5) { // Add user to the group
                 TournamentUser tournamentUser = new TournamentUser(user, group);
                 tournamentUserRepository.save(tournamentUser);
                 group.getParticipants().add(tournamentUser);
 
-                if (participantCount == 4) {
+                if (participantCount == 4) { // Group is full
                     group.setCompetitionStarted(true);
                 }
 
@@ -171,7 +219,7 @@ public class TournamentService {
         tournamentUserRepository.save(tournamentUser);
         savedGroup.getParticipants().add(tournamentUser);
 
-        if (savedGroup.getParticipants().size() == 5) {
+        if (savedGroup.getParticipants().size() == 5) { // Group is full
             savedGroup.setCompetitionStarted(true);
         }
 
@@ -180,12 +228,24 @@ public class TournamentService {
         return savedGroup;
     }
 
+    /**
+     * Checks if the user has any unclaimed rewards.
+     * 
+     * @param user the user entity
+     * @return true if the user has unclaimed rewards, false otherwise
+     */
     private boolean hasUnclaimedReward(User user) {
         return tournamentUserRepository.findByUser(user)
                 .stream()
                 .anyMatch(tu -> tu.getReward() > 0 && !tu.isRewardClaimed());
     }
 
+    /**
+     * Retrieves the leaderboard for a given tournament group.
+     * 
+     * @param tournamentGroup the tournament group entity
+     * @return a list of leaderboard entries
+     */
     public List<GroupLeaderboardEntry> getLeaderboard(TournamentGroup tournamentGroup) {
         List<GroupLeaderboardEntry> leaderboard = tournamentGroup.getParticipants().stream()
                 .sorted((u1, u2) -> u2.getScore() - u1.getScore())
@@ -213,9 +273,17 @@ public class TournamentService {
         return leaderboard;
     }
 
+    /**
+     * Allows a user to claim their reward from the tournament.
+     * 
+     * @param userId the ID of the user
+     * @return the updated user entity
+     * @throws IllegalArgumentException if no rewards are found or reward is already
+     *                                  claimed
+     */
     public User claimReward(Long userId) {
         Optional<User> userOpt = userRepository.findById(userId);
-        if (userOpt.isEmpty()) {
+        if (userOpt.isEmpty()) { // Check if user is found
             throw new IllegalArgumentException("User not found");
         }
 
@@ -225,7 +293,7 @@ public class TournamentService {
                 .filter(tu -> tu.getReward() > 0 && !tu.isRewardClaimed())
                 .collect(Collectors.toList());
 
-        if (tournamentUsers.isEmpty()) {
+        if (tournamentUsers.isEmpty()) { // Check if user has rewards to claim
             throw new IllegalArgumentException("No rewards to claim or reward already claimed");
         }
 
@@ -240,6 +308,13 @@ public class TournamentService {
         return user;
     }
 
+    /**
+     * Finds the tournament group of a user for a given tournament.
+     * 
+     * @param user       the user entity
+     * @param tournament the tournament entity
+     * @return the tournament group entity, or null if not found
+     */
     private TournamentGroup findUserTournamentGroup(User user, Tournament tournament) {
         logger.info("Finding tournament group for user {}", user.getId());
         List<TournamentGroup> groups = tournamentGroupRepository.findByTournament(tournament);
@@ -256,12 +331,21 @@ public class TournamentService {
         return null;
     }
 
+    /**
+     * Retrieves the current active tournament, creating one if no active tournament
+     * exists.
+     * 
+     * @return the current active tournament
+     * @throws IllegalArgumentException if no active tournament is found and it's
+     *                                  not the appropriate time to create one
+     */
     private Tournament getCurrentActiveTournament() {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         List<Tournament> activeTournaments = tournamentRepository.findByIsActiveTrue();
-
+        // If system is started and there is no tournament create new one (Only for
+        // beginning of the system and for exceptions)
         if (activeTournaments.isEmpty()) {
-            if (now.getHour() >= 0 && now.getHour() < 23) {
+            if (now.getHour() >= 0 && now.getHour() < 20) {
                 return createTournament();
             } else {
                 throw new IllegalArgumentException("No active tournament found");
@@ -270,6 +354,12 @@ public class TournamentService {
         return activeTournaments.get(0);
     }
 
+    /**
+     * Finds the current active tournament that a user is participating in.
+     * 
+     * @param user the user entity
+     * @return the current active tournament, or null if not found
+     */
     private Tournament getCurrentTournamentByUser(User user) {
         logger.info("Finding current active tournament for user {}", user.getId());
         List<TournamentUser> tournamentUsers = tournamentUserRepository.findByUser(user)
@@ -288,6 +378,14 @@ public class TournamentService {
         return null;
     }
 
+    /**
+     * Retrieves the rank of a user within their tournament group.
+     * 
+     * @param userId the ID of the user
+     * @return the user's rank within their tournament group
+     * @throws IllegalArgumentException if the user is not found or not part of any
+     *                                  tournament group
+     */
     public GroupLeaderboardEntry getGroupRank(Long userId) {
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
@@ -320,6 +418,13 @@ public class TournamentService {
         return userEntry;
     }
 
+    /**
+     * Retrieves the country leaderboard for a specific tournament.
+     * 
+     * @param tournamentId the ID of the tournament
+     * @return a list of country scores
+     * @throws IllegalArgumentException if the tournament is not found
+     */
     public List<CountryScore> getCountryLeaderboard(Long tournamentId) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
@@ -339,12 +444,22 @@ public class TournamentService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves a tournament group by its ID.
+     * 
+     * @param groupId the ID of the group
+     * @return the tournament group entity
+     * @throws IllegalArgumentException if the group is not found
+     */
     public TournamentGroup getTournamentGroupById(Long groupId) {
         return tournamentGroupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("Group not found"));
     }
 
-    // For Test Purposes: End Tournament Directly
+    /**
+     * Ends all active tournaments immediately and distributes rewards.
+     * This method is intended for test purposes.
+     */
     public void endTournamentDirectly() {
         List<Tournament> activeTournaments = tournamentRepository.findByIsActiveTrue();
         for (Tournament tournament : activeTournaments) {

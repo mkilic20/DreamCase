@@ -16,6 +16,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * REST controller for managing tournaments.
+ */
 @RestController
 @RequestMapping("/tournaments")
 public class TournamentController {
@@ -25,6 +28,12 @@ public class TournamentController {
     @Autowired
     private TournamentService tournamentService;
 
+    /**
+     * Endpoint for a user to enter a tournament.
+     *
+     * @param userId the ID of the user entering the tournament
+     * @return the leaderboard of the tournament group the user entered
+     */
     @PostMapping("/enter/{userId}")
     public ResponseEntity<?> enterTournament(@PathVariable Long userId) {
         try {
@@ -39,6 +48,12 @@ public class TournamentController {
         }
     }
 
+    /**
+     * Endpoint for a user to claim their reward from the last tournament.
+     *
+     * @param userId the ID of the user claiming the reward
+     * @return the updated user information
+     */
     @PostMapping("/claimReward/{userId}")
     public ResponseEntity<?> claimReward(@PathVariable Long userId) {
         try {
@@ -53,6 +68,12 @@ public class TournamentController {
         }
     }
 
+    /**
+     * Endpoint to get the rank of a user within their recent tournament group.
+     *
+     * @param userId the ID of the user
+     * @return the user's rank within their tournament group and user information
+     */
     @GetMapping("/rank/{userId}")
     public ResponseEntity<?> getGroupRank(@PathVariable Long userId) {
         try {
@@ -67,6 +88,12 @@ public class TournamentController {
         }
     }
 
+    /**
+     * Endpoint to get the leaderboard of a specific tournament group.
+     *
+     * @param groupId the ID of the tournament group
+     * @return the leaderboard of the tournament group
+     */
     @GetMapping("/groupLeaderboard/{groupId}")
     public ResponseEntity<?> getGroupLeaderboard(@PathVariable Long groupId) {
         try {
@@ -82,6 +109,12 @@ public class TournamentController {
         }
     }
 
+    /**
+     * Endpoint to get the country leaderboard for a specific tournament.
+     *
+     * @param tournamentId the ID of the tournament
+     * @return the country leaderboard of the tournament
+     */
     @GetMapping("/countryLeaderboard/{tournamentId}")
     public ResponseEntity<?> getCountryLeaderboard(@PathVariable Long tournamentId) {
         try {
@@ -96,10 +129,15 @@ public class TournamentController {
         }
     }
 
+    /**
+     * For Testing: Endpoint to end the current tournament.
+     *
+     * @return No response
+     */
     @PostMapping("/end")
     public ResponseEntity<?> endCurrentTournament() {
         try {
-            tournamentService.endTournaments(); // Reuse existing method
+            tournamentService.endTournaments();
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             logger.error("An unexpected error occurred while ending the current tournament", e);
@@ -108,10 +146,15 @@ public class TournamentController {
         }
     }
 
+    /**
+     * For Testing: Endpoint to start a new tournament.
+     *
+     * @return No response
+     */
     @PostMapping("/start")
     public ResponseEntity<?> startNewTournament() {
         try {
-            Tournament newTournament = tournamentService.createTournament(); // Reuse existing method
+            Tournament newTournament = tournamentService.createTournament();
             return new ResponseEntity<>(newTournament, HttpStatus.CREATED);
         } catch (Exception e) {
             logger.error("An unexpected error occurred while starting a new tournament", e);

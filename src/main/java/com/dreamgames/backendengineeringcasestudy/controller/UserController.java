@@ -12,6 +12,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * REST controller for managing users.
+ */
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -21,6 +24,12 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    /**
+     * Endpoint to create a new user.
+     *
+     * @param username the username of the new user (optional)
+     * @return the newly created user
+     */
     @PostMapping("/create")
     public ResponseEntity<?> createUser(@RequestParam(required = false) String username) {
         try {
@@ -33,6 +42,12 @@ public class UserController {
         }
     }
 
+    /**
+     * Endpoint to update the level of a user.
+     *
+     * @param id the ID of the user to update
+     * @return the updated user information
+     */
     @PutMapping("/updateLevel/{id}")
     public ResponseEntity<?> updateLevel(@PathVariable Long id) {
         try {
@@ -48,6 +63,11 @@ public class UserController {
         }
     }
 
+    /**
+     * For Testing: Endpoint to get all users.
+     *
+     * @return the list of all users
+     */
     @GetMapping
     public ResponseEntity<?> getAllUsers() {
         try {
@@ -60,6 +80,12 @@ public class UserController {
         }
     }
 
+    /**
+     * For Testing: Endpoint to get a user by ID.
+     *
+     * @param id the ID of the user to retrieve
+     * @return the user information
+     */
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         try {
@@ -75,6 +101,12 @@ public class UserController {
         }
     }
 
+    /**
+     * For Testing: Endpoint to delete a user.
+     *
+     * @param id the ID of the user to delete
+     * @return a response indicating the result of the operation
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         try {

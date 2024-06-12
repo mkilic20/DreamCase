@@ -23,10 +23,6 @@ public class User {
     @Column(nullable = false)
     private Country country;
 
-    public enum Country {
-        TURKEY, UNITED_STATES, UNITED_KINGDOM, FRANCE, GERMANY
-    }
-
     // Getters and Setters
     public Long getId() {
         return id;

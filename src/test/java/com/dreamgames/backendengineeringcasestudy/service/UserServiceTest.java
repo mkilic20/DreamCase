@@ -1,5 +1,6 @@
 package com.dreamgames.backendengineeringcasestudy.service;
 
+import com.dreamgames.backendengineeringcasestudy.model.Country;
 import com.dreamgames.backendengineeringcasestudy.model.Tournament;
 import com.dreamgames.backendengineeringcasestudy.model.TournamentGroup;
 import com.dreamgames.backendengineeringcasestudy.model.TournamentUser;
@@ -42,7 +43,7 @@ public class UserServiceTest {
         user.setId(1L);
         user.setCoins(5000);
         user.setLevel(1);
-        user.setCountry(User.Country.values()[new Random().nextInt(User.Country.values().length)]);
+        user.setCountry(Country.values()[new Random().nextInt(Country.values().length)]);
         user.setUsername("TestUser");
 
         when(userRepository.save(any(User.class))).thenReturn(user);
