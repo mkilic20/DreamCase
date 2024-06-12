@@ -34,7 +34,7 @@ public class TournamentService {
 
     public Tournament createTournament() {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-        LocalDateTime endTime = now.withHour(23).withMinute(0).withSecond(0);
+        LocalDateTime endTime = now.withHour(20).withMinute(0).withSecond(0);
 
         Tournament tournament = new Tournament();
         tournament.setStartTime(now);
@@ -65,7 +65,7 @@ public class TournamentService {
         }
     }
 
-    private void distributeRewards(Tournament tournament) {
+    protected void distributeRewards(Tournament tournament) {
         List<TournamentGroup> groups = tournamentGroupRepository.findByTournament(tournament);
         for (TournamentGroup group : groups) {
             if (group.getCompetitionStarted()) {
@@ -192,7 +192,8 @@ public class TournamentService {
                 .map(participant -> new GroupLeaderboardEntry(
                         participant.getUser().getId(),
                         participant.getUser().getUsername(),
-                        participant.getUser().getCountry().toString(),
+                        participant.getUser().getCountry() == null ? "Unknown"
+                                : participant.getUser().getCountry().toString(),
                         participant.getScore(),
                         0 // rank will be set later
                 ))
