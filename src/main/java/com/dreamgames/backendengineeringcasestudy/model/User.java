@@ -16,6 +16,9 @@ public class User {
     @Column(nullable = false)
     private int coins;
 
+    @Column(nullable = true) // Username can be null initially
+    private String username;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Country country;
@@ -47,6 +50,14 @@ public class User {
 
     public void setCoins(int coins) {
         this.coins = coins;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public Country getCountry() {
