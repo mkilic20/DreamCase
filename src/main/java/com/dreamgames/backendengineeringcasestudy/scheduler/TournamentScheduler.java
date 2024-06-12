@@ -16,7 +16,7 @@ public class TournamentScheduler {
         tournamentService.createTournament();
     }
 
-    @Scheduled(cron = "0 0 23 * * ?", zone = "UTC")
+    @Scheduled(cron = "0 0 20 * * ?", zone = "UTC")
     public void endDailyTournaments() {
         tournamentService.endTournaments();
     }

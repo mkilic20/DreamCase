@@ -22,8 +22,8 @@ public class UserService {
 
     public User createUser(String username) {
         User newUser = new User();
-        newUser.setLevel(100); // Starting level
-        newUser.setCoins(100000); // Starting coins
+        newUser.setLevel(1); // Starting level
+        newUser.setCoins(5000); // Starting coins
 
         // Randomly assign a country
         User.Country[] countries = User.Country.values();
