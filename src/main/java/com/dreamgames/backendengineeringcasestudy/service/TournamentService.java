@@ -269,24 +269,6 @@ public class TournamentService {
         return activeTournaments.get(0);
     }
 
-    private Tournament getLastTournamentByUser(User user) {
-        logger.info("Finding last tournament for user {}", user.getId());
-        List<TournamentUser> tournamentUsers = tournamentUserRepository.findByUser(user)
-                .stream()
-                .filter(tu -> !tu.isRewardClaimed())
-                .collect(Collectors.toList());
-
-        if (!tournamentUsers.isEmpty()) {
-            TournamentGroup group = tournamentUsers.get(0).getTournamentGroup();
-            if (!group.getTournament().isActive()) {
-                logger.info("Found inactive tournament for user {}: {}", user.getId(), group.getTournament().getId());
-                return group.getTournament();
-            }
-        }
-        logger.info("No inactive tournament found for user {}", user.getId());
-        return null;
-    }
-
     private Tournament getCurrentTournamentByUser(User user) {
         logger.info("Finding current active tournament for user {}", user.getId());
         List<TournamentUser> tournamentUsers = tournamentUserRepository.findByUser(user)
